@@ -12,8 +12,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.conf.Configured;
 
-public class Numeronym {
+public class Numeronym extends Configured implements Tool {
     private final static int k = 10;
 
     // Map
@@ -72,20 +75,29 @@ public class Numeronym {
         }
     }
 
-    // Driver
-    public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
+    // Run
+    @Override
+    public int run(String[] args) throws Exception {
+        Configuration conf = this.getConf();
         Job job = Job.getInstance(conf, "numeronym count");
         job.setJarByClass(Numeronym.class);
         job.setMapperClass(TokenizerMapper.class);
-        job.setCombinerClass(IntSumReducer.class); // Optimization
+        job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         
+        // ToolRunner strips the -D parts, so args[0] and args[1] 
+        // will now correctly be your HDFS paths.
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        return job.waitForCompletion(true) ? 0 : 1;
+    }
+
+    // Main
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), new Numeronym(), args);
+        System.exit(res);
     }
 }

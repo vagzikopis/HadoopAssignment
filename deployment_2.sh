@@ -13,6 +13,8 @@ MAIN_CLASS="${PACKAGE_NAME}.Dna"
 HDFS_INPUT="/input/task_2"
 HDFS_OUTPUT="/output/task_2"
 
+REDUCER_COUNT=${1:-1}
+
 # Stop script on any error
 set -e
 
@@ -47,9 +49,11 @@ hdfs dfs -rm -r $HDFS_OUTPUT 2>/dev/null || true
 
 echo "[6/6] Executing Hadoop Job..."
 echo "----------------------------------------------------"
-hadoop jar wc.jar $MAIN_CLASS $HDFS_INPUT $HDFS_OUTPUT
+hadoop jar wc.jar $MAIN_CLASS -D mapreduce.job.reduces=$REDUCER_COUNT $HDFS_INPUT $HDFS_OUTPUT
 echo "----------------------------------------------------"
 echo "Job Complete!"
-echo "Files created:"
+echo "Files created in HDFS:"
+hdfs dfs -ls $HDFS_OUTPUT
 
-hdfs dfs -cat $HDFS_OUTPUT/part-r-00000
+echo "Full Result Content:"
+hdfs dfs -cat $HDFS_OUTPUT/part-r-*
