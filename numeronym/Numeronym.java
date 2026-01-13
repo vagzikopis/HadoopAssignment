@@ -87,8 +87,7 @@ public class Numeronym extends Configured implements Tool {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         
-        // ToolRunner strips the -D parts, so args[0] and args[1] 
-        // will now correctly be your HDFS paths.
+        // HDFS paths.
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         
