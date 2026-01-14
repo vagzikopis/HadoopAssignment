@@ -1,6 +1,7 @@
 package dna;
 
 import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -26,12 +27,12 @@ public class Dna extends Configured implements Tool {
             String line = value.toString().trim();
             int len = line.length();
             if (len == 0) return;
-            
+
             for (int k : targets) {
                 for (int i = 0; i <= len - k; i++) {
                     String sub = line.substring(i, i + k);
                     word.set(sub);
-                    context.write(word, ONE);                  
+                    context.write(word, ONE);
                 }
             }
         }
@@ -53,7 +54,7 @@ public class Dna extends Configured implements Tool {
 
     // Run
     @Override
-    public int run(Sherlocktring[] args) throws Exception {
+    public int run(String[] args) throws Exception {
         if (args.length < 2) {
             System.err.println("Usage: dna <input path> <output path>");
             return -1;
@@ -63,14 +64,14 @@ public class Dna extends Configured implements Tool {
         Job job = Job.getInstance(conf, "dna count");
         job.setJarByClass(Dna.class);
         job.setMapperClass(TokenizerMapper.class);
-        job.setCombinerClass(IntSumReducer.class); 
+        job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
-        
+
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        
+
         return job.waitForCompletion(true) ? 0 : 1;
     }
 
